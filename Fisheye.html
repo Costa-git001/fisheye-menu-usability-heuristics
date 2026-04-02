@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Fisheye Menu</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0b0c10;
+      --surface: #13151c;
+      --border: #1e2130;
+      --accent: #00f5c4;
+      --accent2: #ff5f6d;
+      --text: #e0e6f0;
+      --muted: #5a6180;
+      --item-size: 80px;
+      --item-size-hover: 160px;
+      --transition: 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Space Mono', monospace;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 40px 40px;
+      opacity: 0.35;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    header {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    header h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(1.4rem, 4vw, 2.4rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--accent);
+      text-shadow: 0 0 40px rgba(0,245,196,0.25);
+    }
+
+    header p {
+      margin-top: 0.5rem;
+      font-size: 0.75rem;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .fisheye-menu {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 14px;
+      max-width: 780px;
+      width: 100%;
+    }
+
+    .menu-item {
+      position: relative;
+      width: var(--item-size);
+      height: var(--item-size);
+      cursor: pointer;
+      transition:
+        width var(--transition),
+        height var(--transition),
+        box-shadow var(--transition);
+      flex-shrink: 0;
+    }
+
+    .menu-item-inner {
+      width: 100%;
+      height: 100%;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      overflow: hidden;
+      transition:
+        border-color var(--transition),
+        background var(--transition),
+        border-radius var(--transition);
+      position: relative;
+    }
+
+    .menu-item:hover,
+    .menu-item.active {
+      width: var(--item-size-hover);
+      height: var(--item-size-hover);
+      z-index: 10;
+    }
+
+    .menu-item:hover .menu-item-inner,
+    .menu-item.active .menu-item-inner {
+      border-color: var(--accent);
+      background: #101620;
+      border-radius: 24px;
+      box-shadow: 0 0 30px rgba(0,245,196,0.18), 0 8px 40px rgba(0,0,0,0.6);
+    }
+
+    .menu-item-inner::before {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      border-radius: inherit;
+      background: conic-gradient(var(--accent), var(--accent2), var(--accent));
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: -1;
+    }
+    .menu-item:hover .menu-item-inner::before,
+    .menu-item.active .menu-item-inner::before { opacity: 0.15; }
+
+    .item-icon {
+      font-size: 2rem;
+      line-height: 1;
+      transition: font-size var(--transition), transform var(--transition);
+      filter: grayscale(30%);
+    }
+
+    .menu-item:hover .item-icon,
+    .menu-item.active .item-icon {
+      font-size: 2.8rem;
+      transform: translateY(-8px);
+      filter: none;
+    }
+
+    .item-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.6rem;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      transition: color 0.2s ease, font-size var(--transition);
+      text-align: center;
+    }
+
+    .menu-item:hover .item-label,
+    .menu-item.active .item-label {
+      color: var(--accent);
+      font-size: 0.65rem;
+    }
+
+    .item-detail {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 6px 8px 10px;
+      background: linear-gradient(to top, rgba(0,245,196,0.12) 0%, transparent 100%);
+      font-size: 0.6rem;
+      line-height: 1.35;
+      color: var(--text);
+      text-align: center;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 0.25s ease 0.05s, transform 0.25s ease 0.05s;
+      pointer-events: none;
+      border-bottom-left-radius: inherit;
+      border-bottom-right-radius: inherit;
+    }
+
+    .menu-item:hover .item-detail,
+    .menu-item.active .item-detail {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .item-detail strong {
+      display: block;
+      font-size: 0.68rem;
+      color: var(--accent);
+      margin-bottom: 2px;
+      font-weight: 700;
+    }
+
+    .info-card {
+      position: relative;
+      z-index: 1;
+      margin-top: 2.5rem;
+      width: 100%;
+      max-width: 520px;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      padding: 1.2rem 1.5rem;
+      min-height: 80px;
+      transition: border-color 0.3s ease;
+    }
+
+    .info-card.lit { border-color: var(--accent); }
+
+    .info-card .card-label {
+      font-size: 0.65rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      margin-bottom: 0.5rem;
+    }
+
+    .info-card .card-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--accent);
+      margin-bottom: 0.4rem;
+    }
+
+    .info-card .card-desc {
+      font-size: 0.78rem;
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .info-card .card-default {
+      font-size: 0.78rem;
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    footer {
+      position: relative;
+      z-index: 1;
+      margin-top: 2.5rem;
+      font-size: 0.65rem;
+      color: var(--muted);
+      text-align: center;
+      letter-spacing: 0.08em;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Fisheye Menu</h1>
+    <p>Hover or click any item to expand it</p>
+  </header>
+
+  <div class="fisheye-menu" id="menu"></div>
+
+  <div class="info-card" id="infoCard">
+    <div class="card-label">Selected Item</div>
+    <p class="card-default">Hover or click a menu item to see more details.</p>
+  </div>
+
+  <footer>Fisheye Menu · Interactive UI Demonstration</footer>
+
+  <script>
+    const heuristics = [
+      { id: 'UH#1', icon: '🖥️', name: 'Visibility of System Status',
+        desc: 'The system should always keep users informed about what is going on, through appropriate feedback within a reasonable time.' },
+      { id: 'UH#2', icon: '🌍', name: 'Match Between System & Real World',
+        desc: 'The system should speak the user\'s language, using words, phrases, and concepts familiar to the user rather than system-oriented terms.' },
+      { id: 'UH#3', icon: '🔓', name: 'User Control & Freedom',
+        desc: 'Users often choose system functions by mistake. They need a clearly marked "emergency exit" to leave the unwanted state without extended dialogue.' },
+      { id: 'UH#4', icon: '📐', name: 'Consistency & Standards',
+        desc: 'Users should not have to wonder whether different words, situations, or actions mean the same thing. Follow platform conventions.' },
+      { id: 'UH#5', icon: '🛡️', name: 'Error Prevention',
+        desc: 'Even better than good error messages is a careful design that prevents a problem from occurring in the first place.' },
+      { id: 'UH#6', icon: '🧠', name: 'Recognition Rather Than Recall',
+        desc: 'Minimize the user\'s memory load by making objects, actions, and options visible.' },
+      { id: 'UH#7', icon: '⚡', name: 'Flexibility & Efficiency of Use',
+        desc: 'Accelerators may often speed up the interaction for experts so that the system can cater to both inexperienced and experienced users.' },
+      { id: 'UH#8', icon: '🎨', name: 'Aesthetic & Minimalist Design',
+        desc: 'Dialogues should not contain irrelevant or rarely needed information. Every extra unit competes with relevant information.' },
+      { id: 'UH#9', icon: '🩹', name: 'Help Users Recognize & Recover from Errors',
+        desc: 'Error messages should be expressed in plain language, precisely indicate the problem, and constructively suggest a solution.' },
+      { id: 'UH#10', icon: '📚', name: 'Help & Documentation',
+        desc: 'It may be necessary to provide help that is easy to search and focused on the user\'s task.' }
+    ];
+
+    const menu = document.getElementById('menu');
+    const infoCard = document.getElementById('infoCard');
+    let activeItem = null;
+
+    heuristics.forEach((h, i) => {
+      const item = document.createElement('div');
+      item.className = 'menu-item';
+      item.innerHTML = `
+        <div class="menu-item-inner">
+          <span class="item-icon">${h.icon}</span>
+          <span class="item-label">${h.id}</span>
+          <div class="item-detail">
+            <strong>${h.id}</strong>${h.name}
+          </div>
+        </div>
+      `;
+
+      item.addEventListener('mouseenter', () => showInfo(h, item));
+      item.addEventListener('mouseleave', () => {
+        if (activeItem !== item) item.classList.remove('active');
+        if (activeItem === null) resetCard();
+      });
+
+      item.addEventListener('click', () => {
+        if (activeItem === item) {
+          activeItem = null;
+          item.classList.remove('active');
+          resetCard();
+        } else {
+          if (activeItem) activeItem.classList.remove('active');
+          activeItem = item;
+          item.classList.add('active');
+          showInfo(h, item);
+        }
+      });
+
+      item.style.opacity = '0';
+      item.style.transform = 'translateY(20px)';
+      setTimeout(() => {
+        item.style.transition = `opacity 0.4s ease ${i * 55}ms, transform 0.4s ease ${i * 55}ms`;
+        item.style.opacity = '1';
+        item.style.transform = 'translateY(0)';
+      }, 80);
+
+      menu.appendChild(item);
+    });
+
+    function showInfo(h, item) {
+      item.classList.add('active');
+      infoCard.classList.add('lit');
+      infoCard.innerHTML = `
+        <div class="card-label">Selected Item</div>
+        <div class="card-title">${h.id} — ${h.name}</div>
+        <p class="card-desc">${h.desc}</p>
+      `;
+    }
+
+    function resetCard() {
+      infoCard.classList.remove('lit');
+      infoCard.innerHTML = `
+        <div class="card-label">Selected Item</div>
+        <p class="card-default">Hover or click a menu item to see more details.</p>
+      `;
+    }
+  </script>
+</body>
+</html>
