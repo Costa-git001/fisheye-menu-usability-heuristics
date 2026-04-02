@@ -62,21 +62,6 @@ Open the project folder
 Run:
 Open index.html in a browser
 
-🧩 Folder Structure
-fisheye-menu/
-│
-├── index.html
-├── style.css
-├── script.js
-│
-├── assets/
-│   ├── icons/
-│   └── images/
-│
-├── screenshots/
-│
-└── README.md
-
 📝 Author
 John Nyongesa
 
